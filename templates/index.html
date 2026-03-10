@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI News Article Generator</title>
+    <!-- Modern Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+
+<body>
+
+    <img src="{{ url_for('static', filename='aurora_logo.jpeg') }}" alt="Aurora Logo" class="top-left-logo">
+    <img src="{{ url_for('static', filename='university_logo.png') }}" alt="University Logo" class="top-right-logo">
+    <div class="background-glow"></div>
+    <div class="particles">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+    </div>
+
+    <div class="container">
+        <div class="header-section">
+            <h1><i data-lucide="sparkles" class="motion-icon-sparkle"></i> AI CONTENT GENERATOR</h1>
+            <p class="subtitle">Transform events into engaging content with AI-powered generation</p>
+            <div class="feature-badge">
+                <i data-lucide="shield-check"></i>
+                <span>Ethical AI • Multi-Platform • Event Content Generation</span>
+            </div>
+        </div>
+
+        <!-- Dashboard Navigation Tabs -->
+        <div class="dashboard-tabs">
+            <button class="tab-btn active" onclick="switchTab('article')" data-tab="article">
+                <i data-lucide="newspaper"></i>
+                <span>Generate Article</span>
+            </button>
+            <button class="tab-btn" onclick="switchTab('upload')" data-tab="upload">
+                <i data-lucide="upload"></i>
+                <span>Upload Image / Brochure</span>
+            </button>
+        </div>
+
+        <!-- Tab Content: Generate Article -->
+        <div class="tab-content active" id="article-tab">
+            <div class="input-card">
+                <div class="input-group">
+                    <div class="input-wrapper">
+                        <i data-lucide="search" class="input-icon"></i>
+                        <input type="text" id="topic" placeholder="What's happening in the world?" required>
+                    </div>
+                    <div class="select-wrapper">
+                        <i data-lucide="filter"></i>
+                        <select id="level">
+                            <option value="Moderate">Moderate</option>
+                            <option value="Strict">Strict</option>
+                        </select>
+                    </div>
+                    <button onclick="generateNews()" id="generateBtn">
+                        <i data-lucide="wand2" class="motion-icon-wand"></i>
+                        <span class="btn-text">Generate Article</span>
+                        <div class="loader"></div>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Content: Upload Photo -->
+        <div class="tab-content" id="upload-tab">
+            <div class="input-card upload-card">
+                <div class="upload-area" id="uploadArea">
+                    <input type="file" id="photoUpload" accept="image/*,.pdf" style="display: none;" onchange="handleFileSelect(event)">
+                    <div class="upload-placeholder" onclick="document.getElementById('photoUpload').click()">
+                        <i data-lucide="upload-cloud" style="width: 64px; height: 64px; color: var(--accent-purple); margin-bottom: 1rem;"></i>
+                        <h3>Upload Image or Brochure</h3>
+                        <p>Click to upload, or drag and drop event photos, posters, or brochures</p>
+                        <p class="upload-hint">Supports JPG, PNG, WEBP (Max 10MB)</p>
+                    </div>
+                    <div class="upload-preview" id="uploadPreview" style="display: none;">
+                        <img id="previewImage" src="" alt="Preview" style="display: none;">
+                        <div id="previewPdfInfo" class="preview-pdf-info" style="display: none;">
+                            <i data-lucide="file-text"></i>
+                            <div class="preview-pdf-text">
+                                <span id="previewPdfName"></span>
+                                <span class="preview-pdf-note">PDF brochure selected (first page will be analyzed)</span>
+                            </div>
+                        </div>
+                        <button class="remove-image-btn" onclick="removeUploadedImage()">
+                            <i data-lucide="x"></i>
+                        </button>
+                    </div>
+                </div>
+                <button onclick="analyzeAndGenerateContent()" id="analyzeBtn" class="analyze-btn" style="display: none; margin-top: 1.5rem;">
+                    <i data-lucide="sparkles"></i>
+                    <span class="btn-text">Analyze & Generate Content</span>
+                    <div class="loader"></div>
+                </button>
+            </div>
+        </div>
+
+        <!-- Output: Generated Article -->
+        <div class="output-container" id="articleOutput">
+            <div class="output-header">
+                <div class="left-header">
+                    <i data-lucide="newspaper" class="motion-icon-news"></i>
+                    <span class="output-title">Generated Article</span>
+                    <span class="status-indicator"></span>
+                </div>
+                <div class="action-buttons">
+                    <button id="downloadBtn" class="secondary-btn" onclick="downloadContent()" title="Download article">
+                        <i data-lucide="download"></i>
+                        <span class="btn-text-mobile-hidden">Download</span>
+                    </button>
+                    <button id="shareBtn" class="secondary-btn" onclick="shareContent()" title="Share article">
+                        <i data-lucide="share-2"></i>
+                        <span class="btn-text-mobile-hidden">Share</span>
+                    </button>
+                    <button id="copyBtn" class="secondary-btn" onclick="copyContent()" title="Copy to clipboard">
+                        <i data-lucide="copy" class="copy-icon"></i>
+                        <span class="btn-text-mobile-hidden">Copy</span>
+                    </button>
+                </div>
+            </div>
+            <div class="output" id="output">Your AI-generated article will appear here...</div>
+        </div>
+
+        <!-- Output: Event Content Generation -->
+        <div class="event-content-container" id="eventContentContainer" style="display: none;">
+            <div class="output-header">
+                <div class="left-header">
+                    <i data-lucide="sparkles" class="motion-icon-sparkle"></i>
+                    <span class="output-title">Generated Social Media Content</span>
+                    <span class="status-indicator"></span>
+                </div>
+            </div>
+            <div class="event-content-wrapper" id="eventContentWrapper">
+                <!-- Content / Event Details (tabular) -->
+                <div class="event-details-card" id="eventDetailsCard">
+                    <h3><i data-lucide="info"></i> Content Details</h3>
+                    <div class="event-details-table-wrap">
+                        <table class="event-details-table" id="eventDetailsTable">
+                            <thead>
+                                <tr>
+                                    <th>Field</th>
+                                    <th>Value</th>
+                                </tr>
+                            </thead>
+                            <tbody id="eventDetails"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Content Tabs -->
+                <div class="content-platform-tabs">
+                    <button class="platform-tab active" onclick="showPlatformContent('linkedin')">
+                        <i data-lucide="linkedin"></i> LinkedIn
+                    </button>
+                    <button class="platform-tab" onclick="showPlatformContent('instagram')">
+                        <i data-lucide="instagram"></i> Instagram
+                    </button>
+                    <button class="platform-tab" onclick="showPlatformContent('whatsapp')">
+                        <i data-lucide="message-circle"></i> WhatsApp Status
+                    </button>
+                </div>
+
+                <!-- Platform Content -->
+                <div class="platform-content active" id="linkedin-content">
+                    <div class="content-header">
+                        <h4><i data-lucide="linkedin"></i> LinkedIn Post</h4>
+                        <div style="display:flex; gap: .5rem;">
+                            <button class="copy-content-btn" onclick="sharePlatformContent('linkedin')">
+                                <i data-lucide="share-2"></i> Share
+                            </button>
+                            <button class="copy-content-btn" onclick="copyPlatformContent('linkedin')">
+                                <i data-lucide="copy"></i> Copy
+                            </button>
+                        </div>
+                    </div>
+                    <div class="platform-text" id="linkedin-text"></div>
+                </div>
+
+                <div class="platform-content" id="instagram-content">
+                    <div class="content-header">
+                        <h4><i data-lucide="instagram"></i> Instagram Post</h4>
+                        <div style="display:flex; gap: .5rem;">
+                            <button class="copy-content-btn" onclick="sharePlatformContent('instagram')">
+                                <i data-lucide="share-2"></i> Share
+                            </button>
+                            <button class="copy-content-btn" onclick="copyPlatformContent('instagram')">
+                                <i data-lucide="copy"></i> Copy
+                            </button>
+                        </div>
+                    </div>
+                    <div class="platform-text" id="instagram-text"></div>
+                </div>
+
+                <div class="platform-content" id="whatsapp-content">
+                    <div class="content-header">
+                        <h4><i data-lucide="message-circle"></i> WhatsApp Status</h4>
+                        <div style="display:flex; gap: .5rem;">
+                            <button class="copy-content-btn" onclick="sharePlatformContent('whatsapp')">
+                                <i data-lucide="share-2"></i> Share
+                            </button>
+                            <button class="copy-content-btn" onclick="copyPlatformContent('whatsapp')">
+                                <i data-lucide="copy"></i> Copy
+                            </button>
+                        </div>
+                    </div>
+                    <div class="platform-text" id="whatsapp-text"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/script.js"></script>
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+    </script>
+</body>
+
+</html>
